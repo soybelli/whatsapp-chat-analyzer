@@ -1,18 +1,56 @@
 import streamlit as st
-import preprocessor,helper,sentiment,sentiment_plot
+import preprocessor, helper, sentiment, sentiment_plot
 import matplotlib.pyplot as plt
 import seaborn as sns
+import base64
 
-st.sidebar.title("whatsapp_chat_analyzer")
+# Set page configuration
+st.set_page_config(
+    page_title="WhatsApp Chat Analyzer",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
-uploaded_file=st.sidebar.file_uploader("chose a file")
+# Define custom CSS styles
+st.markdown(
+    """
+    <style>
+    .sidebar .sidebar-content {
+        background-image: linear-gradient(to bottom, #f0f2f5, #e3e5e8);
+    }
+    .sidebar .sidebar-content .stButton button {
+        background-color: #663399;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Add a title and description
+st.title("WhatsApp Chat Analyzer")
+st.write("Analyze your WhatsApp chat data.")
+
+mobile_view = st.experimental_get_query_params().get('mobile')
+
+if mobile_view:
+    st.sidebar.write("")
+    st.sidebar.write("")
+    st.sidebar.write("")
+    st.sidebar.write("")
+    upload_container = st.sidebar.container()
+    with upload_container:
+        uploaded_file = st.file_uploader("Upload Chat File", type=["txt"])
+else:
+    uploaded_file = st.sidebar.file_uploader("Upload Chat File", type=["txt"])
+
+
 if uploaded_file is not None:
-    bytes_data=uploaded_file.getvalue()
-    data=bytes_data.decode("utf-8")
-    df=preprocessor.preprocess(data)
+    bytes_data = uploaded_file.getvalue()
+    data = bytes_data.decode("utf-8")
+    df = preprocessor.preprocess(data)
 
-    #st.dataframe(df)
-
+    # ... (Rest of your code)
     user_list=df['user'].unique().tolist()
     try:
         user_list.remove('group_notification')
@@ -27,31 +65,37 @@ if uploaded_file is not None:
 
     if st.sidebar.button("Show Analysis"):
         num_message, words ,num_media ,num_links = helper.fetch_stats(selected_user,df)
-        col1, col2, col3, col4 = st.columns(4)
 
-        with col1:
-            st.header("Total Messages")
-            st.title(num_message)
-        with col2:
-            st.header("Total Words")
-            st.title(words)
-        with col3:
-            st.header("Total Media Shared")
-            st.title(num_media)
-        with col4:
-            st.header("Total Links Shared")
-            st.title(num_links)
+        # Apply responsive layout
+        col1, col2 = st.columns([2, 3])
 
-        # monthly timeline
-        st.title("Monthly Timeline")
+
+        sentiment_value,dict1=sentiment.sentiment_value(df)
         timeline = helper.monthly_timeline(selected_user,df)
-        fig,ax = plt.subplots()
-        ax.plot(timeline['time'], timeline['message'],color='green')
-        plt.xticks(rotation='vertical')
-        st.pyplot(fig)
-        
-        
+        w=sentiment_plot.sentiment_plot()
+        with col1:
+            # Display total messages and other statistics
+            st.header("Statistics")
+            st.metric("Total Messages", num_message)
+            st.metric("Total Words", words)
+            st.metric("Total Media Shared", num_media)
+            st.metric("Total Links Shared", num_links)
 
+            # Display monthly timeline
+            st.header("Monthly Timeline")
+            fig, ax = plt.subplots()
+            ax.plot(timeline['time'], timeline['message'], color='green')
+            plt.xticks(rotation='vertical')
+            st.pyplot(fig)
+
+        with col2:
+            # Display sentiment analysis
+            st.header("Sentiment Analysis")
+            st.write(f"The sentiment value is {sentiment_value}")
+            st.bar_chart(dict1)
+            st.bar_chart(w)
+
+        # ... (Rest of your code)
         if selected_user != 'OverAll':
             col1,col2=st.columns(2)
             with col1:
@@ -75,30 +119,10 @@ if uploaded_file is not None:
             ax = sns.heatmap(user_heatmap)
             st.set_option('deprecation.showPyplotGlobalUse', False)
             st.pyplot(fig)
-        
-
-        sentiment_value,dict1=sentiment.sentiment_value(df)
-        
-        coll1,coll2=st.columns(2)
-        with coll1:
-            st.header("The sentiment value is "+sentiment_value)
-            fig1, ax2 = plt.subplots()
-            ax2.bar(dict1.keys(), dict1.values())
-            fig1.autofmt_xdate()
-            st.pyplot(fig1)
-
-        with coll2:
-            st.header("The sentiment values plotted ")
-            w=sentiment_plot.sentiment_plot()
-            fig, ax1 = plt.subplots()
-            ax1.bar(w.keys(), w.values())
-            fig.autofmt_xdate()
-            st.pyplot(fig)
-
 
         #finding the busy user
         col1,col2=st.columns(2)
-            
+                
         x,new_df=helper.most_busy_user(df)
         emoji_df=helper.emoji_help(selected_user,df)
 
@@ -112,8 +136,8 @@ if uploaded_file is not None:
         with col2:
             st.title("Most Used Emojis")
             st.dataframe(emoji_df)
-                
-        
+                    
+            
         #wordcloud
         st.title("WordCloud")
         df_wc=helper.create_wordcloud(selected_user,df)
@@ -129,5 +153,13 @@ if uploaded_file is not None:
         fig.autofmt_xdate()
         st.pyplot(fig)
 
-
+# Display footer
+st.markdown(
+    """
+    <div style="text-align: center;">
+    <p>Created with ❤️ by Soumya Samanta</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
