@@ -12,41 +12,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Define custom CSS styles
-st.markdown(
-    """
-    <style>
-    .sidebar .sidebar-content {
-        background-image: linear-gradient(to bottom, #f0f2f5, #e3e5e8);
-    }
-    .sidebar .sidebar-content .stButton button {
-        background-color: #663399;
-        color: white;
-    }
-    
-    @media (max-width: 767px) {
-        .st-bi, .st-ew, .st-ed {
-            display: none;
-        }
-        .st-cq {
-            display: block !important;
-            text-align: center;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # Add a title and description
 st.title("WhatsApp Chat Analyzer")
 st.write("Analyze your WhatsApp chat data.")
 
-# Mobile view layout for file upload
-st.sidebar.markdown('<div class="st-cq"><h3>Upload Chat File</h3></div>', unsafe_allow_html=True)
-uploaded_file = st.sidebar.file_uploader("", type=["txt"])
+# Add a file uploader in the sidebar
+uploaded_file = st.sidebar.file_uploader("Upload Chat File", type=["txt"])
 
 
 if uploaded_file is not None:
