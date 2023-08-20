@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import base64
 
+
 # Set page configuration
 st.set_page_config(
     page_title="WhatsApp Chat Analyzer",
@@ -22,6 +23,18 @@ st.markdown(
         background-color: #663399;
         color: white;
     }
+    
+    @media (max-width: 767px) {
+        .st-bi, .st-ew, .st-ed {
+            display: none;
+        }
+        .st-cq {
+            display: block !important;
+            text-align: center;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -31,18 +44,9 @@ st.markdown(
 st.title("WhatsApp Chat Analyzer")
 st.write("Analyze your WhatsApp chat data.")
 
-mobile_view = st.experimental_get_query_params().get('mobile')
-
-if mobile_view:
-    st.sidebar.write("")
-    st.sidebar.write("")
-    st.sidebar.write("")
-    st.sidebar.write("")
-    upload_container = st.sidebar.container()
-    with upload_container:
-        uploaded_file = st.file_uploader("Upload Chat File", type=["txt"])
-else:
-    uploaded_file = st.sidebar.file_uploader("Upload Chat File", type=["txt"])
+# Mobile view layout for file upload
+st.sidebar.markdown('<div class="st-cq"><h3>Upload Chat File</h3></div>', unsafe_allow_html=True)
+uploaded_file = st.sidebar.file_uploader("", type=["txt"])
 
 
 if uploaded_file is not None:
